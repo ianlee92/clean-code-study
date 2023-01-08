@@ -19,6 +19,8 @@
 
 ## 암시하는 이름은 사용하지 말고 의미있는 변수 이름을 사용하세요.
 
+### 예시1)
+
 **Bad:**
 
 ```jsx
@@ -33,6 +35,47 @@ const t = charge(u, s);
 const user = getUser();
 const subscription = getSubscription();
 const transaction = charge(user, subscription);
+```
+
+### 예시2)
+
+**Bad:**
+
+```jsx
+// 코드의 맥락이 코드 자체에 명시적으로 드러나지 않는다.
+function getThem() {
+  let list1 = [];
+  for (const x of theList) {
+    if (x[0] === 4) list1.push(x);
+  }
+  return list1;
+}
+```
+
+**Good:**
+
+```jsx
+// 각 개념에 이름이 붙어있어서 역할을 파악하기 쉽다.
+function getThem() {
+  let flaggedCells = [];
+  for (const cell of gameBoard) {
+    if (cell[STATUS_VALUE] === FLAGGED) flaggedCells.push(cell);
+  }
+  return flaggedCells;
+}
+```
+
+**Better:**
+
+```jsx
+// isFlagged라는 명시적인 함수를 사용해 FLAGGED라는 상수를 감췄다.
+function getThem() {
+  let flaggedCells = [];
+  for (const cell of gameBoard) {
+    if (cell.isFlagged()) flaggedCells.push(cell);
+  }
+  return flaggedCells;
+}
 ```
 
 ## 발음할 수 있는 변수 이름을 사용하세요.
