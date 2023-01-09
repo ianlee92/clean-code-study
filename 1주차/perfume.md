@@ -112,7 +112,7 @@ getActiveAccountInfo();
 _e.g)_
 
 > **높음:** `getHtml()`이라는 함수는 HTML을 가져오는 것만 알 수 있고, 어떤 것이랑 연관되어 있는지 알 수 없기 때문에 추상화 수준이 높다고 할 수 있습니다.
-> **보통:** `String pagePathName = PathParser.render(pagepath);`는 PathParser객체의 render 함수를 이용해 pagePathName을 가져올 수 있다는 정보를 유추할 수 있기 때문에 추상화 수준이 보통이라고 할 수 있습니다.
+> **보통:** `String pagePathName = PathParser.render(pagepath);`는 PathParser객체의 render 함수를 이용해 pagePathName을 가져올 수 있다는 정보를 유추할 수 있기 때문에 추상화 수준이 보통이라고 할 수 있습니다.<br/>
 > **낮음:** `.append("\n")`는 바로 어떤 의미인지 유추 가능하기 때문에 추상화 수준이 낮다고 할 수 있습니다.
 
 한 함수 내에 여러 추상화 수준을 섞으면 특정 표현이 높은 추상화 수준인지 낮은 추상화 수준인지 구분하기 어렵기 때문에 코드를 읽는 사람이 헷갈릴 수 있습니다. 따라서 **한 함수의 모든 문장은 하나의 추상화 수준이어야 합니다.**
@@ -260,7 +260,7 @@ function showEmployeeList(employee: Developer | Manager) {
 
 ## 참조
 
-책 <클린코드>
-[클린코드 타입스크립트](https://738.github.io/clean-code-typescript/)
-[Spline Tech Blog](https://dev-splin.github.io/clean%20code/CleanCode-Chapter3/)
-[클린코드 강의 2. 추상화](https://ablue-1.tistory.com/81)
+책 <클린코드> <br/>
+[클린코드 타입스크립트](https://738.github.io/clean-code-typescript/)<br/>
+[Spline Tech Blog](https://dev-splin.github.io/clean%20code/CleanCode-Chapter3/)<br/>
+[클린코드 강의 2. 추상화](https://ablue-1.tistory.com/81)<br/>
