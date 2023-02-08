@@ -77,6 +77,136 @@ The Open Close Principle states that the design and writing of the code should b
 
 # 8장
 
+우리는 새로운 패키지나 오픈소스를 사용해야 할 상황에 직멶한다. 이 코드들을 우리 내부 코드와 “클린하게” 통합시켜야 한다.
+
+### 외부코드 사용하기
+
+인터페이스를 제공 및 사용하는 입장사이에는 필연적인 긴장감이 존재하기 마련. 이것을 경계에서의 긴장이라 한다.
+
+```jsx
+public class Sensors {
+    // 경계의 인터페이스(이 경우에는 Map의 메서드)는 숨겨진다.
+    // Map의 인터페이스가 변경되더라도 여파를 최소화할 수 있다. 예를 들어 Generic을 사용하던 직접 캐스팅하던 그건 구현 디테일이며 Sensor클래스를 사용하는 측에서는 신경쓸 필요가 없다.
+    // 이는 또한 사용자의 목적에 딱 맞게 디자인되어 있으므로 이해하기 쉽고 잘못 사용하기 어렵게 된다.
+
+    private Map sensors = new HashMap();
+
+    public Sensor getById(String id) {
+        return (Sensor)sensors.get(id);
+    }
+    //snip
+}
+```
+
+### 경계 살피기
+
+외부코드를 사용하면 적은시간에 더 좋은 효율을 낼 수 있다.
+
+하지만, 안주하지않고 테스트를 꼭 진행해야 한다.
+
+(수많은 디버깅…오류..발생……에딭….위지윅…..\_)
+
+### log4j 익히기
+
+```jsx
+// 1.
+    // 우선 log4j 라이브러리를 다운받자.
+    // 고민 많이 하지 말고 본능에 따라 "hello"가 출력되길 바라면서 아래의 테스트 코드를 작성해보자.
+    @Test
+    public void testLogCreate() {
+        Logger logger = Logger.getLogger("MyLogger");
+        logger.info("hello");
+    }
+
+    // 2.
+    // 위 테스트는 "Appender라는게 필요하다"는 에러를 뱉는다.
+    // 조금 더 읽어보니 ConsoleAppender라는게 있는걸 알아냈다.
+    // 그래서 ConsoleAppender라는 객체를 만들어 넣어줘봤다.
+    @Test
+    public void testLogAddAppender() {
+        Logger logger = Logger.getLogger("MyLogger");
+        ConsoleAppender appender = new ConsoleAppender();
+        logger.addAppender(appender);
+        logger.info("hello");
+    }
+
+    // 3.
+    // 위와 같이 하면 "Appender에 출력 스트림이 없다"고 한다.
+    // 이상하다. 가지고 있는게 이성적일것 같은데...
+    // 구글의 도움을 빌려, 다음과 같이 해보았다.
+    @Test
+    public void testLogAddAppender() {
+        Logger logger = Logger.getLogger("MyLogger");
+        logger.removeAllAppenders();
+        logger.addAppender(new ConsoleAppender(
+            new PatternLayout("%p %t %m%n"),
+            ConsoleAppender.SYSTEM_OUT));
+        logger.info("hello");
+    }
+
+    // 성공했다. 하지만 ConsoleAppender를 만들어놓고 ConsoleAppender.SYSTEM_OUT을 받는건 이상하다.
+    // 그래서 빼봤더니 잘 돌아간다.
+    // 하지만 PatternLayout을 제거하니 돌아가지 않는다.
+    // 그래서 문서를 살펴봤더니 "ConsoleAppender의 기본 생성자는 unconfigured상태"란다.
+    // 명백하지도 않고 실용적이지도 않다... 버그이거나, 적어도 "일관적이지 않다"고 느껴진다.
+```
+
+```jsx
+// 조금 더 구글링, 문서 읽기, 테스트를 거쳐 log4j의 동작법을 알아냈고 그것을 간단한 유닛테스트로 기록했다.
+// 이제 이 지식을 기반으로 log4j를 래핑하는 클래스를 만들수 있다.
+// 나머지 코드에서는 log4j의 동작원리에 대해 알 필요가 없게 됐다.
+
+public class LogTest {
+    private Logger logger;
+
+    @Before
+    public void initialize() {
+        logger = Logger.getLogger("logger");
+        logger.removeAllAppenders();
+        Logger.getRootLogger().removeAllAppenders();
+    }
+
+    @Test
+    public void basicLogger() {
+        BasicConfigurator.configure();
+        logger.info("basicLogger");
+    }
+
+    @Test
+    public void addAppenderWithStream() {
+        logger.addAppender(new ConsoleAppender(
+            new PatternLayout("%p %t %m%n"),
+            ConsoleAppender.SYSTEM_OUT));
+        logger.info("addAppenderWithStream");
+    }
+
+    @Test
+    public void addAppenderWithoutStream() {
+        logger.addAppender(new ConsoleAppender(
+            new PatternLayout("%p %t %m%n")));
+        logger.info("addAppenderWithoutStream");
+    }
+}
+```
+
+### 학습테스트는 공짜 이상이다
+
+투자하는 노력보다 얻는 성과가 거 크다.
+
+### 아직 존재하지 않는 코드를 사용하기
+
+아직 개발되지않은 모듈이 필요한데, 구현되지 않았을경우 우리의 일정이 밀리는 것을 가만히 두고 보지 않는다.
+
+그렇기에 미리미리 생각해서 설계하고 더 빠르게 개발할 수 있도록 설계하자. (더미로직)
+
+### 깨끗한 경계
+
+좋은 소프트웨어 디자인은 변경이 생길 경우 많은 재작업이 필요하지 않다.
+
+우리의 내부코드가 외부코드를 많이 관여하지 않도록 막아야 한다.
+
+우리가 컨트롤 할수 있는 코드에 의지하자. 그렇지 않으면 외부코드들이 우리를 조종할 것이다.
+
 ---
 
 # 9장
