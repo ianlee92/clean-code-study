@@ -96,3 +96,135 @@ final String outputDir = scratchDir.getAbsolutePath();
 다만 추상화 추상화를 말하며 추상 인터페이스를 제공해 사용자가 구현을 모른 채 자료의 핵심을 조작할 수 있어야 진정한 의미의 클래스라는 문장에 엘리의 드림코딩 자바스크립트 강좌에서 들었던 이야기가 생각났다.
 
 **커피 자판기를 클래스**라고 가정하면, **커피의 개수**와 **동전을 넣는 행위**, **커피를 만드는 행위**는 클래스의 프로퍼티다. 그런데, 만약 **사용자가 커피의 개수를 -1로 설정한다면 어떻게 될까? 또 다른 외부인이 커피의 개수를 맘대로 바꿔버린다면?** 그렇기 때문에 getter와 setter를 사용하며, private 하게 만드는 것이라고 말한다. 사용자는 -1로 설정했지만 내부 setter함수로 0을 만들어주는 것이다. 조회함수와 설정함수를 감춰야 한다는 표현에서 갑자기 이 내용이 생각났다.
+
+# 10장
+
+### 클래스 체계
+
+**static public --> static private --> private 인스턴스 --> (public은 필요한 경우가 거의 없다)**
+
+추상화 단계가 순차적
+
+**캡슐화**
+
+비공개 상태를 유지할 온갖 방법을 강구하고, 캡슐화를 풀어주는 결정은 언제나 최후의 수단
+
+### 클래스는 작아야 한다.
+
+맡은 책임을 측정한다.
+
+**개념은 빈행으로 분리**
+
+### ES5의 함수보다 ES2015/ES6의 클래스를 사용하세요
+
+기존 ES5의 클래스에서 이해하기 쉬운 상속, 구성 및 메소드 정의를 하는 건 매우 어렵습니다. 매번 그런것은 아니지만 상속이 필요한 경우라면 클래스를 사용하는 것이 좋습니다. 하지만 당신이 크고 더 복잡한 객체가 필요한 경우가 아니라면 클래스보다 작은 함수를 사용하세요.
+
+**안좋은 예:**
+
+```jsx
+const Animal = function (age) {
+  if (!(this instanceof Animal)) {
+    throw new Error('Instantiate Animal with `new`');
+  }
+
+  this.age = age;
+};
+
+Animal.prototype.move = function () {};
+
+const Mammal = function (age, furColor) {
+  if (!(this instanceof Mammal)) {
+    throw new Error('Instantiate Mammal with `new`');
+  }
+
+  Animal.call(this, age);
+  this.furColor = furColor;
+};
+
+Mammal.prototype = Object.create(Animal.prototype);
+Mammal.prototype.constructor = Mammal;
+Mammal.prototype.liveBirth = function liveBirth() {};
+
+const Human = function (age, furColor, languageSpoken) {
+  if (!(this instanceof Human)) {
+    throw new Error('Instantiate Human with `new`');
+  }
+
+  Mammal.call(this, age, furColor);
+  this.languageSpoken = languageSpoken;
+};
+
+Human.prototype = Object.create(Mammal.prototype);
+Human.prototype.constructor = Human;
+Human.prototype.speak = function speak() {};
+```
+
+**좋은 예:**
+
+```jsx
+class Animal {
+  constructor(age) {
+    this.age = age;
+  }
+
+  move() {
+    /* ... */
+  }
+}
+
+class Mammal extends Animal {
+  constructor(age, furColor) {
+    super(age);
+    this.furColor = furColor;
+  }
+
+  liveBirth() {
+    /* ... */
+  }
+}
+
+class Human extends Mammal {
+  constructor(age, furColor, languageSpoken) {
+    super(age, furColor);
+    this.languageSpoken = languageSpoken;
+  }
+
+  speak() {
+    /* ... */
+  }
+}
+```
+
+클래스 이름은 해당 클래스 책임을 기술해야된다. 작명은 클래스 크기를 줄이는 첫번째 관문임.
+
+간결한 이름이 떠오르지 않는다면 `클래스 책임이 너무 많아서`
+
+클래스 설명은 "if", "and", "or", "but"을 사용하지 않고 25 단어 내외로 가능해야된다. 한글의 경우 만약, 그리고, ~하며, 하지만 이 들어가면 안됨.
+
+**단일 책임 원칙**
+
+클래스나 모듈을 변경할 이유가 단 하나뿐이어야 한다는 원칙이다.
+
+책임, 즉 변경할 이유를 파악하려고 애쓰다 보면 코드를 추상화 하기도 쉬워짐.
+
+SRP는 객체지향설계에서 더욱 중요한 개념이고, 지키기 수월한 개념인데, `개발자가 가장 무시하는 규칙` 중 하나이다.
+
+대부분의 프로그래머들이 **돌아가는 소프트웨어** 에 초점을 맞춤.
+
+**깨끗하고 체계적인 소프트웨어** 라는 다음 관심사로 전환 필요.
+
+**큰 클래스 몇개가 아니라 작은 클래스 여럿으로 이뤄진 시스템이 더 바람직하다.작은 클래스는 각자 맡은 책임이 하나며, 변경할 이유가 하나며, 다른 작은 클래스와 협력해시스템에 필요한 동작을 수행한다.**
+
+**응집도**
+
+메서드가 변수를 더 많이 사용할 수록 메서드와 클래스는 응집도가 더 높다.
+
+응집도가 높다는 말은 클래스에 속한 메서드와 변수가 서로 의존하며 논리적인 단위로 묶인다는 의미기 때문.
+
+### 변경하기 쉬운 클래스
+
+클래스 일부에서만 사용되는 비공개 메서드는 코드 개선의 잠재적인 여지를 시사
+
+잘 짜여진 시스템은 `추가와 수정에 있어서 건드릴 코드가 최소`이다.
+
+결함도가 낮다는 말은 각 시스템 요소가 다른 요소로부터 그리고 변경으로부터 잘 격리되어있다는 뜻
